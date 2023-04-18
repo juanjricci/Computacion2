@@ -1,0 +1,21 @@
+PROCESOS
+getpid() --> obtiene el proceso
+getppid() --> obtiene el proceso padre
+os.fork() --> crea el proceso hijo
+
+SENALES
+Las senales son interrupciones.
+Las interrupciones son asincronas. Son de software y las maneja el SO.
+
+Ejemplo de senal o interrupcion:
+
+$ kill -9 1 --> ahi estoy matando al proceso padre de todo (1)
+otro ejemplo es ctrl+z en vim que lo manda a background (lo detiene hasta que lo volvamos a usar ingresando fg)
+
+$ kill -l --> ayuda para ver los argumentos numericos para kill
+
+Un proceso puede: 
+	.Ignorar una senal    //SIGKILL no se uede ignorar ni SIGSTOP
+	.Realizar la accion por defecto de la senal
+	.Utilizar un programa (manejador de senal) que 'haga algo' con esa senal
+

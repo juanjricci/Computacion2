@@ -1,0 +1,164 @@
+
+Computación 2:
+
+Procesos paralelos y concurrentes
+
+subprocess
+	run
+	call
+	Popen
+
+os.fork()
+	retorno (0 en el hijo, PID del hijo en el padre)
+	zombies -> wait / waitpid
+
+signal - comunicación de procesos (asincronica)
+	setear un handler
+		-> ignorar la señal (KILL, TERM...)
+		-> realizar la accion por defecto
+		-> ejecutar una función (handler)
+		signal.signal() seteamos la señal
+		signal.kill() enviamos una señal
+
+os.pipe()
+	tuberia que conecta dos procesos (relacionados)
+	entrada y salida
+	r, w = os.pipe()
+	productor-consumidor
+
+fifo (named pipe)
+	memoria secundaria (archivo en disco)
+	conecta a procesos que conocen el path/ruta al archivo
+
+Memoria compartida (value, array)
+	segmentos de memoria compartidos entre procesos relacionados
+
+Socket
+	inet (cliente / servidor) Internet
+		DGRAM -> udp (datagrama) - los nodos envian y si llega bien, si no, también | no confiable
+			dns (consultas), snmp, ...
+		STREAM -> tcp (flujo) acuse de recibo (ack), handshake de conexion | confiable
+			http/https, ssh, smtp, imap, pop, xmpp, dns (transferencia de zona)...
+	unix -> socket en archivo
+
+	socket + fork / multiprocessing / subprocess / threading / socketserver / asyncio
+	
+	Resumen de las funciones:
+		STREAM:
+			Servidor:
+				crear el socket (socket.socket)
+				cargar host y puerto
+				asociar host y puerto con el socket -> socket.bind()
+				establecer la cola de backlog (clientes en espera de handshake)
+				atender conexiones -> socketcreado.accept() . . 
+				socket_cliente.recv() y socket_cliente.send()
+
+			Cliente:
+				crear el socket -> socket.socket()
+				cargar host y puerto al cual vamos a conectar
+				socket_creado.connect() conecta al servidor
+
+		DGRAM
+			Servidor:
+				crear el socket -> socket.socket()
+				cargar host y puerto
+				asociar host y puerto al socket -> socket_creado.bind()
+				leer y enviar info con socket_creado.recvfrom() y socket_creado.sendto()
+
+			Cliente:
+				crear el socket -> socket.socket()
+				cargar host y puerto del servidor al que conectarse
+				leer y enviar info con socket_creado.recvfrom() y socket_creado.sendto()
+
+	SSL/TLS: seguridad en comunicación
+		certificados x509.... (openssl)
+
+Multiprocessing
+	creación de procesos hijos
+	interfaz simil "threading" para creacion de procesos
+	pipes
+	colas de mensajes
+	semaforos y lock
+
+Threading
+	creacion de hilos de ejecucion
+	interfaz simil "multiprocessing" para creacion de procesos
+	pipes
+	semaforos y lock
+
+Pools of workers
+	procesos
+	pre-creamos un pool de procesos
+	asignar tareas al pool
+	apply / map / *async
+
+Concurrent.Futures
+	interfaz para hacer "cosas" similares al pool of workers
+	procesos e hilos
+		ProcessPoolExecutor \ heredan de Executor
+		ThreadPoolExecutor  /
+
+	Ejecutores que administran workers
+
+Celery(caso de pool de procesos distribuido/sincronizado)
+
+asyncio
+	manejo asincronico de rutinas
+	no es paralelismo -> multiprocessing
+	no es multithreading (GIL - global interpreter lock)
+	no tiene race conditions
+	"alternetiva" a threading
+	2 APIs
+		alto nivel -> ".run()"
+		bajo nivel -> "event loop"
+
+		Ejemplo ajedrecista:
+			1 ajedrecista experto jugando contra 24 novatos
+			el experto demora 5s en cada mov
+			el novato demora 55s en cada mov
+			suponiendo un juego medio de 30 movimientos
+
+			versión sincrónica:
+				una partida por vez
+				30 mov a 1min por mov -> 30min en cada juego
+				la exibición completa: 24*30min = 720min = 12h
+
+			versión asincrónica
+				el experto hacer su mov en 5s
+				24 oponentes * 5s = 120s = 2min
+				30mov * 2min = 60min = 1h
+
+	La base fundamental: coroutine "coro" (corrutina - rutina cooperativa)
+		una funciónpuede proactivamente dejar el micro a otra función
+		esto se llama "awaiting" en asyncio
+		esto pueden hacerlo: desde python >3.7
+			coroutine
+			tasks
+			"futures"
+
+		Ejemplo de coroutine:
+			async def funcion():
+				codigo
+				puede empezar a usar "await"
+
+			creación de tareas asincronicas:
+				asyncio.create_task()
+				asyncio.gather()
+
+
+Celery y las colas de tareas
+	pool of workers: manejador de tareas, sistema de procesamiento de tareas
+
+	manejador de cola de mensajes, varias alternativas:
+		RabbitMQ
+		Redis <--
+			broker: cola de tareas a ejecutar
+			backend: cola de resultados de tareas
+		Otros (Amazon sqs)
+	
+	Cuándo usar celery?
+		* tareas que requieren mas tiempo, para no romper ciclo pregunta-respuesta
+		* romper tareas largas consistentes en varias tareas cortas
+
+Docker (intro)
+	despliegue de la app
